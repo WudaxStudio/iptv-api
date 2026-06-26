@@ -1,6 +1,6 @@
 services:
   iptv-api:
-    image: guovern/iptv-api:latest
+    image: iptv-api:wdx-change
     container_name: iptv-api
     restart: unless-stopped
     tty: true

@@ -258,6 +258,14 @@ class ConfigManager:
         return self.config.get("Settings", "catchup_source", fallback="").strip()
 
     @property
+    def api_key(self):
+        """支持多个密钥，逗号分隔，返回列表"""
+        key_str = self.config.get("Settings", "api_key", fallback="").strip()
+        if not key_str:
+            return []
+        return [k.strip() for k in key_str.split(",") if k.strip()]
+
+    @property
     def speed_test_limit(self):
         return self.config.getint("Settings", "speed_test_limit", fallback=5)
 

@@ -20,6 +20,32 @@ log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
 
+# 需要 API Key 验证的路由（获取订阅列表的接口）
+PROTECTED_ROUTES = {
+    '/', '/txt', '/ipv4/txt', '/ipv6/txt',
+    '/hls', '/hls/txt', '/hls/ipv4/txt', '/hls/ipv6/txt',
+    '/m3u', '/hls/m3u', '/ipv4/m3u', '/ipv4', '/hls/ipv4',
+    '/ipv6/m3u', '/ipv6', '/hls/ipv6',
+    '/hls/ipv4/m3u', '/hls/ipv6/m3u', '/content'
+}
+
+
+@app.before_request
+def check_api_key():
+    """API Key 认证中间件 - 只验证订阅列表接口"""
+    api_keys = config.api_key
+    # 未配置密钥，不启用认证
+    if not api_keys:
+        return None
+    # 只验证受保护的路由，其他资源（EPG、台标、流、日志等）直接放行
+    if request.path not in PROTECTED_ROUTES:
+        return None
+    # 验证 key（支持多个密钥，匹配任意一个即可）
+    provided_key = request.args.get('key', '').strip()
+    if provided_key not in api_keys:
+        return jsonify({"error": "Forbidden", "message": "Invalid or missing API key"}), 403
+
+
 @app.route("/")
 def show_index():
     return get_result_file_content(
